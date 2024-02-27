@@ -3,22 +3,24 @@ import math
 from RSA_functies import ontsleutel
 
 def lees_geheime_sleutel(naam):
-    with open(naam, 'rb') as file:
-        n_grootte = int.from_bytes(file.read(4), byteorder='big')
-        n = int.from_bytes(file.read(n_grootte), byteorder='big')
+    with open(naam, 'r') as file:
+        regels = file.readlines()
 
-        d_grootte = int.from_bytes(file.read(4), byteorder='big')
-        d = int.from_bytes(file.read(d_grootte), byteorder='big')
+        n_base64 = regels[0].strip()
+        d_base64 = regels[1].strip()
 
-    return (n, d, n_grootte)
+        n = int.from_bytes(base64.b64decode(n_base64), byteorder='big')
+        d = int.from_bytes(base64.b64decode(d_base64), byteorder='big')
 
-def lees_bericht(naam, n_grootte):
-    # Lees en decodeer de Base64-gecodeerde data
+    return (n, d)
+
+def lees_bericht(naam, n):
     with open(naam, 'rb') as file:
         base64_encoded_data = file.read()
     versleutelde_bytes = base64.b64decode(base64_encoded_data)
     
-    # Splits de bytes in integers gebaseerd op de grootte van n
+    n_grootte = math.ceil(n.bit_length() / 8)
+
     bericht_integers = []
     for i in range(0, len(versleutelde_bytes), n_grootte):
         blok = versleutelde_bytes[i:i+n_grootte]
@@ -26,7 +28,7 @@ def lees_bericht(naam, n_grootte):
     
     return bericht_integers
 
-sleutel = lees_geheime_sleutel('RSA/geheime_sleutel.bin')
-versleuteld_bericht = lees_bericht('RSA/bericht.txt', sleutel[2])
-
+sleutel = lees_geheime_sleutel('RSA/geheime_sleutel.txt')
+versleuteld_bericht = lees_bericht('RSA/bericht.txt', sleutel[0])
+print(versleuteld_bericht)
 print(ontsleutel(versleuteld_bericht, sleutel[0], sleutel[1]))
