@@ -1,3 +1,6 @@
+import base64
+
+
 S_BOX=[
     0x63, 0x7c, 0x77, 0x7b,	0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
     0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
@@ -18,12 +21,17 @@ S_BOX=[
 ]
 
 def lees_sleutel(naam):
-    sleutel = [[0 for i in range(4)] for i in range(4)]
-    with open(naam, 'rb') as file:
-        for i in range(4):
-            for j in range(4):
-                byte = file.read(1)
-                sleutel[i][j] = int.from_bytes(byte, byteorder='big')
+    with open(naam, 'r') as file:
+        sleutel_base64 = file.read()
+        sleutel_bytes = base64.b64decode(sleutel_base64)
+
+    sleutel = [[0 for i in range(4)] for j in range(4)]
+    byte = 0
+    for i in range(4):
+        for j in range(4):
+            sleutel[i][j] = sleutel_bytes[byte]
+            byte += 1
+
     return sleutel
 
 def gf_vermenigvuldiging(a, b): #Vermenigvuldiging in GF(2^8)

@@ -92,7 +92,7 @@ def blok_naar_hex(blok):
     hex_b = ''.join(format(byte, '02x') for woord in blok for byte in woord)
     return hex_b
 
-originele_sleutel = lees_sleutel('AES/geheime_sleutel.bin')
+originele_sleutel = lees_sleutel('AES/geheime_sleutel.txt')
 bericht = '''
     Brylan Bristopher Woods - 175.35.188.56
     Israel Chaves - 174.57.138.172

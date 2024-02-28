@@ -148,7 +148,7 @@ def print_matrix_hex(matrix):
         print(f"[{row_str}]")
     print('------------------------------')
 
-originele_sleutel = lees_sleutel('AES/geheime_sleutel.bin')
+originele_sleutel = lees_sleutel('AES/geheime_sleutel.txt')
 blokken = lees_bericht('AES/bericht.txt')
 
 print(ontsleutelde_blokken_naar_tekst(ontsleutel(blokken, originele_sleutel)))

@@ -1,21 +1,18 @@
+import math
 import secrets
+import base64
 
 def genereer_sleutel():
-    sleutel = []
-    for i in range(1, 5):
-        rij = []
-        for j in range(1, 5):
-            byte = secrets.randbits(8)
-            byte |= (1 << 7)
-            rij.append(byte)
-        sleutel.append(rij)
+    sleutel = secrets.randbits(128)
+    sleutel |= (1 << 127)
+    sleutel = sleutel.to_bytes(math.ceil(sleutel.bit_length() / 8), byteorder='big')
+
     return sleutel
 
 def sleutel_opslagen(naam, sleutel):
-    with open(naam, 'wb') as file:
-        for rij in sleutel:
-            for byte in rij:
-                file.write(byte.to_bytes(1, byteorder='big'))
+    with open(naam, 'w') as file:
+        sleutel_base64 = base64.b64encode(sleutel).decode()
+        file.write(sleutel_base64)
 
 sleutel = genereer_sleutel()
-sleutel_opslagen('AES/geheime_sleutel.bin', sleutel)
+sleutel_opslagen('AES/geheime_sleutel.txt', sleutel)
