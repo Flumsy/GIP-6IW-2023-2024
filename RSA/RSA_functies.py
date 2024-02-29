@@ -1,5 +1,19 @@
 from random import randint
 import secrets
+import os
+
+sleutels_folder = os.path.join(os.path.dirname(__file__), '..', 'Sleutels')
+berichten_folder = os.path.join(os.path.dirname(__file__), '..', 'Berichten')
+
+if not os.path.exists(sleutels_folder):
+    os.makedirs(sleutels_folder)
+
+if not os.path.exists(berichten_folder):
+    os.makedirs(berichten_folder)
+
+publieke_sleutel_pad = os.path.abspath(os.path.join(sleutels_folder, 'RSA_publieke_sleutel.txt'))
+geheime_sleutel_pad = os.path.abspath(os.path.join(sleutels_folder, 'RSA_geheime_sleutel.txt'))
+berichten_pad = os.path.abspath(os.path.join(berichten_folder, 'RSA_bericht.txt'))
 
 def naar_binair(getal):
     binairGetal = []

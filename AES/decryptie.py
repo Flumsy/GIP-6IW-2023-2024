@@ -1,5 +1,6 @@
 import base64
-from AES_functies import AddRoundKey, lees_sleutel, sleutel_uitbreiding, gf_vermenigvuldiging, transponeer
+import os
+from AES.AES_functies import AddRoundKey, lees_sleutel, sleutel_uitbreiding, gf_vermenigvuldiging, transponeer, berichten_pad, sleutel_pad
 
 inv_S_BOX = [
     0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
@@ -20,17 +21,20 @@ inv_S_BOX = [
     0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 ]
 
-def lees_bericht(naam, blok_grootte=16):
-    with open(naam, 'rb') as file:
-        versleutelde_bytes = base64.b64decode(file.read())
-    blokken = [versleutelde_bytes[i:i+blok_grootte] for i in range(0, len(versleutelde_bytes), blok_grootte)]
+def lees_bericht(blok_grootte=16):
+    if(os.path.exists(berichten_pad)):
+        with open(berichten_pad, 'rb') as file:
+            versleutelde_bytes = base64.b64decode(file.read())
+        blokken = [versleutelde_bytes[i:i+blok_grootte] for i in range(0, len(versleutelde_bytes), blok_grootte)]
 
-    blokken_als_getallen = [
-        [list(blok[i:i+4]) for i in range(0, len(blok), 4)]
-        for blok in blokken
-    ]
-    
-    return blokken_als_getallen
+        blokken_als_getallen = [
+            [list(blok[i:i+4]) for i in range(0, len(blok), 4)]
+            for blok in blokken
+        ]
+        
+        return blokken_als_getallen
+    else:
+        return 'geen bericht'
 
 def InvSubWord(woord): #Substitueerd elke byte in een woord met de bijhorende byte uit de inverse S-BOX
     return [inv_S_BOX[byte] for byte in woord]
@@ -148,10 +152,16 @@ def print_matrix_hex(matrix):
         print(f"[{row_str}]")
     print('------------------------------')
 
-originele_sleutel = lees_sleutel('AES/geheime_sleutel.txt')
-blokken = lees_bericht('AES/bericht.txt')
-
-print(ontsleutelde_blokken_naar_tekst(ontsleutel(blokken, originele_sleutel)))
+def decryptie():
+    originele_sleutel = lees_sleutel(sleutel_pad)
+    if originele_sleutel != 'geen sleutel':
+        blokken = lees_bericht()
+        if blokken != 'geen bericht':
+            print(f'Ontsleuteld bericht\n{ontsleutelde_blokken_naar_tekst(ontsleutel(blokken, originele_sleutel))}\n')
+        else: 
+            print('Geen bericht gevonden.\n')
+    else:
+        print('Geen AES sleutel gevonden.\n')
 
 # cipher = hex_sleutel_naar_matrix('69c4e0d86a7b0430d8cdb78070b4c55a')
 # sleutel = hex_sleutel_naar_matrix('000102030405060708090a0b0c0d0e0f')

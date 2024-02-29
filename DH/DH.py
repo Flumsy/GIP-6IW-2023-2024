@@ -3,6 +3,15 @@ import math
 from random import randint
 import secrets
 import hashlib
+import os
+import sys
+
+sleutels_folder = os.path.join(os.path.dirname(__file__), '..', 'Sleutels')
+
+if not os.path.exists(sleutels_folder):
+    os.makedirs(sleutels_folder)
+
+sleutel_pad = os.path.abspath(os.path.join(sleutels_folder, 'AES_geheime_sleutel.txt'))
 
 def naar_binair(getal):
     binairGetal = []
@@ -91,18 +100,39 @@ def sleutel_afleiding_functie(geheim):
 def AES_sleutel(geheim):
     afgeleide_sleutel = sleutel_afleiding_functie(geheim)
     sleutel_base64 = base64.b64encode(afgeleide_sleutel).decode()
-    print(sleutel_base64)
+    return sleutel_base64
 
-n = willekeurig_priem_1024_bit_getal()
-g = 2
+def naar_base64(getal):
+    return base64.b64encode(getal.to_bytes(math.ceil(getal.bit_length() / 8), byteorder='big')).decode()
 
-sleutels_partij_1 = genereer_sleutels(n, g)
-sleutels_partij_2 = genereer_sleutels(n, g)
+def sleuteluitwisseling():
+    n = willekeurig_priem_1024_bit_getal()
+    g = 2
 
-gedeeld_geheim_partij_1 = genereer_gedeeld_geheim(sleutels_partij_2[0], sleutels_partij_1[1], n)
-gedeeld_geheim_partij_2 = genereer_gedeeld_geheim(sleutels_partij_1[0], sleutels_partij_2[1], n)
+    print('\n-------------------------------')
+    print(f'\nModulus: {naar_base64(n)}\n\nGrondtal: {naar_base64(g)}')
 
-if(gedeeld_geheim_partij_1 == gedeeld_geheim_partij_2):
-    geheim = gedeeld_geheim_partij_1
+    sleutels_partij_1 = genereer_sleutels(n, g)
+    sleutels_partij_2 = genereer_sleutels(n, g)
 
-AES_sleutel(geheim)
+    print(f'\nPublieke sleutel partij 1: {naar_base64(sleutels_partij_1[0])}\n\n\nGeheime sleutel partij 1: {naar_base64(sleutels_partij_1[1])}')
+    print(f'\nPublieke sleutel partij 2: {naar_base64(sleutels_partij_2[0])}\n\n\nGeheime sleutel partij 2: {naar_base64(sleutels_partij_2[1])}')
+
+    gedeeld_geheim_partij_1 = genereer_gedeeld_geheim(sleutels_partij_2[0], sleutels_partij_1[1], n)
+    gedeeld_geheim_partij_2 = genereer_gedeeld_geheim(sleutels_partij_1[0], sleutels_partij_2[1], n)
+
+    if(gedeeld_geheim_partij_1 == gedeeld_geheim_partij_2):
+        geheim = gedeeld_geheim_partij_1
+
+    print(f'\nGedeeld geheim: {naar_base64(geheim)}')
+
+    sleutel = AES_sleutel(geheim)
+
+    with open(sleutel_pad, 'w') as file:
+        file.write(sleutel)
+
+    print(f'\nAES Sleutel: {sleutel}')
+
+    print('-------------------------------')
+    print(f'\nGeheime sleutel\n{sleutel}\n-----------------------------------------------------')
+    print(f'Geheime sleutel opgeslagen naar: {sleutel_pad}')

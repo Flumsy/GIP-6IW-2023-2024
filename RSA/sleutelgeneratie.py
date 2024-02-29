@@ -1,35 +1,41 @@
 import base64
 import math
+import os
 
-from .RSA_functies import willekeurig_priem_1024_bit_getal, vind_d
+import RSA.RSA_functies as RSA
+
+def naar_base64(getal):
+    return base64.b64encode(getal.to_bytes(math.ceil(getal.bit_length() / 8), byteorder='big')).decode()
 
 def sleutel_opslagen(naam, sleutel):
     n, onderdeel = sleutel #Sleutel bestaat uit (n, e) of (n, d)
 
-    n_base64 = base64.b64encode(n.to_bytes(math.ceil(n.bit_length() / 8), byteorder='big')).decode()
-    onderdeel_base64 = base64.b64encode(onderdeel.to_bytes(math.ceil(onderdeel.bit_length() / 8), byteorder='big')).decode()
+    n_base64 = naar_base64(n)
+    onderdeel_base64 = naar_base64(onderdeel)
 
     with open(naam, 'w') as file:
         file.write(f'{n_base64}\n{onderdeel_base64}\n')
 
 def genereer_sleutel():
-    p = willekeurig_priem_1024_bit_getal()
-    q = willekeurig_priem_1024_bit_getal()
+    p = RSA.willekeurig_priem_1024_bit_getal()
+    q = RSA.willekeurig_priem_1024_bit_getal()
 
     while(q == p):
-        q = willekeurig_priem_1024_bit_getal()
+        q = RSA.willekeurig_priem_1024_bit_getal()
 
     n = p*q
     phi_n = (p-1)*(q-1)
     e = 65537
-    d = vind_d(e, phi_n)
+    d = RSA.vind_d(e, phi_n)
 
     publieke_sleutel = (n, e)
     geheime_sleutel = (n, d)
 
-    sleutel_opslagen('RSA/publieke_sleutel.txt', publieke_sleutel)
-    sleutel_opslagen('RSA/geheime_sleutel.txt', geheime_sleutel)
+    sleutel_opslagen(RSA.publieke_sleutel_pad, publieke_sleutel)
+    sleutel_opslagen(RSA.geheime_sleutel_pad, geheime_sleutel)
 
-    print('')
-    print('    Publieke sleutel opgeslagen naar: RSA/publieke_sleutel.txt')
-    print('    Geheime sleutel opgeslagen naar: RSA/geheime_sleutel.txt')
+    print('-------------------------------')
+    print(f'\nPublieke sleutel\n{naar_base64(publieke_sleutel[0])}\n{naar_base64(publieke_sleutel[1])}\n-----------------------------------------------------')
+    print(f'Geheime sleutel\n{naar_base64(geheime_sleutel[0])}\n{naar_base64(geheime_sleutel[1])}\n-----------------------------------------------------')
+    print(f'Publieke sleutel opgeslagen naar: {RSA.publieke_sleutel_pad}')
+    print(f'Geheime sleutel opgeslagen naar: {RSA.geheime_sleutel_pad}\n')

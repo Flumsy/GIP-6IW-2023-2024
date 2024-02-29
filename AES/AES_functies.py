@@ -1,5 +1,18 @@
 import base64
+import os
 
+sleutels_folder = os.path.join(os.path.dirname(__file__), '..', 'Sleutels')
+berichten_folder = os.path.join(os.path.dirname(__file__), '..', 'Berichten')
+
+if not os.path.exists(sleutels_folder):
+    os.makedirs(sleutels_folder)
+
+if not os.path.exists(berichten_folder):
+    os.makedirs(berichten_folder)
+
+sleutel_pad = os.path.abspath(os.path.join(sleutels_folder, 'AES_geheime_sleutel.txt'))
+sleutel_pad_dh = os.path.abspath(os.path.join(sleutels_folder, 'AES_DH_geheime_sleutel.txt'))
+berichten_pad = os.path.abspath(os.path.join(berichten_folder, 'AES_bericht.txt'))
 
 S_BOX=[
     0x63, 0x7c, 0x77, 0x7b,	0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -21,18 +34,21 @@ S_BOX=[
 ]
 
 def lees_sleutel(naam):
-    with open(naam, 'r') as file:
-        sleutel_base64 = file.read()
-        sleutel_bytes = base64.b64decode(sleutel_base64)
+    if(os.path.exists(naam)):
+        with open(naam, 'r') as file:
+            sleutel_base64 = file.read()
+            sleutel_bytes = base64.b64decode(sleutel_base64)
 
-    sleutel = [[0 for i in range(4)] for j in range(4)]
-    byte = 0
-    for i in range(4):
-        for j in range(4):
-            sleutel[i][j] = sleutel_bytes[byte]
-            byte += 1
+        sleutel = [[0 for i in range(4)] for j in range(4)]
+        byte = 0
+        for i in range(4):
+            for j in range(4):
+                sleutel[i][j] = sleutel_bytes[byte]
+                byte += 1
 
-    return sleutel
+        return sleutel
+    else:
+        return 'geen sleutel'
 
 def gf_vermenigvuldiging(a, b): #Vermenigvuldiging in GF(2^8)
     resultaat = 0

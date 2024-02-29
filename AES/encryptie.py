@@ -1,5 +1,6 @@
 import base64
-from AES_functies import AddRoundKey, lees_sleutel, SubWord, gf_vermenigvuldiging, sleutel_uitbreiding, transponeer
+from AES.AES_functies import AddRoundKey, lees_sleutel, SubWord, gf_vermenigvuldiging, sleutel_uitbreiding, transponeer, berichten_pad, sleutel_pad, sleutel_pad_dh
+from DH.DH import sleuteluitwisseling
 
 def bericht_opvulling(bericht):
     bytes_nodig = 16 - (len(bericht) % 16)
@@ -84,6 +85,10 @@ def opslagen_versleuteld_bericht(naam, versleutelde_blokken):
     with open(naam, 'wb') as file:
         file.write(base64_gecodeerd)
 
+    print('\n-------------------------------')
+    print(f'\nVersleuteld bericht\n{base64_gecodeerd.decode()}\n-----------------------------------------------------')
+    print(f'Versleuteld bericht opgeslagen naar: {berichten_pad}\n')
+
 def hex_naar_matrix(hex_sleutel):
     bytes_sleutel = bytes.fromhex(hex_sleutel)
     return [list(bytes_sleutel[i:i+4]) for i in range(0, 16, 4)]
@@ -92,24 +97,19 @@ def blok_naar_hex(blok):
     hex_b = ''.join(format(byte, '02x') for woord in blok for byte in woord)
     return hex_b
 
-originele_sleutel = lees_sleutel('AES/geheime_sleutel.txt')
-bericht = '''
-    Brylan Bristopher Woods - 175.35.188.56
-    Israel Chaves - 174.57.138.172
-    Gustavo Alves - 52.9.202.244
-    Fabio Di Nota - 255.255.255.0
-    Thomas Vatthis - 192.54.219.179
-    Charles Hoskinson - 0x40b38765696e3d5d8d9d834d8aad4bb6e418e489 - 91.137.57.7
-    Joao Aribal - 106.72.177.15
-    Finn Davies - 191.193.101.209
-    Jayden Marthinez - 150.199.206.10
-    Ruben Sitku - 0.91.60.193
-    Alex Smith - 48.154.205.127
-    Spencer Dan - 76.26.7.146
-'''
+def encryptie(bericht):
+    originele_sleutel = lees_sleutel(sleutel_pad)
+    if originele_sleutel != 'geen sleutel':
+        opslagen_versleuteld_bericht(berichten_pad, versleutel(bericht, originele_sleutel))
+    else:
+        print('\n-------------------------------')
+        print('\nGeen AES sleutel gevonden.\n')
 
-opslagen_versleuteld_bericht('AES/bericht.txt', versleutel(bericht, originele_sleutel))
-
+def encryptie_DH(bericht):
+    sleuteluitwisseling()
+    sleutel = lees_sleutel(sleutel_pad)
+    opslagen_versleuteld_bericht(berichten_pad, versleutel(bericht, sleutel))
+    
 # sleutel = hex_naar_matrix('000102030405060708090a0b0c0d0e0f')
 # tekst = hex_naar_matrix('00112233445566778899aabbccddeeff')
 # blokken = [[[0, 17, 34, 51], [68, 85, 102, 119], [136, 153, 170, 187], [204, 221, 238, 255]]]
